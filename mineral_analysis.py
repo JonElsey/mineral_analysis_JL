@@ -19,6 +19,7 @@ from matplotlib import pyplot as plt
 # which works nicely with data in this kind of spreadsheet format, and lets
 # us work with the column headers to make sure we group samples/regions
 
+# This is a test comment to see if editing a file in PyCharm updates it in Spyder.
 def load_and_filter(input_file, mintype = 'olivine'):
     
     if mintype.lower() == 'olivine':
@@ -180,7 +181,7 @@ def cation_quality_check(data, elements, ratios, cat_props, error = 0.1, mintype
         
         # if not happy - make sure the user inputs a numeric value else the code
         # will stay in this loop
-        if prompt.lower() in nos:
+        if prompt.lower().rstrip() in nos:
             
             errorflag = True
             
@@ -193,10 +194,10 @@ def cation_quality_check(data, elements, ratios, cat_props, error = 0.1, mintype
                     errorflag = False
         
         # else if we are happy then move on
-        elif prompt.lower() in yesses:
+        elif prompt.lower().rstrip() in yesses:
             flag = False
         # else if the user put a numeric value in then use this as the error
-        elif prompt.replace('.', '').isnumeric(): # replace . as this is a non numeric type
+        elif prompt.replace('.', '').isnumeric().rstrip(): # replace . as this is a non numeric type
             error = float(prompt)
         # otherwise prompt the user to select a valid response
         else:
