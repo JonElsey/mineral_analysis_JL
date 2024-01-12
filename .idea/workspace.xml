@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="165b9d9c-8479-4f96-8bf2-a2b46105b958" name="Changes" comment="Fixed issue where user input wasn't accepted if there were trailing spaces">
+    <list default="true" id="165b9d9c-8479-4f96-8bf2-a2b46105b958" name="Changes" comment="Fixed hidden files being uploaded to repository">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
@@ -88,7 +88,15 @@
       <option name="project" value="LOCAL" />
       <updated>1705057436818</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Fixed hidden files being uploaded to repository">
+      <option name="closed" value="true" />
+      <created>1705058021464</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1705058021464</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -117,6 +125,7 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Fixed issue where user input wasn't accepted if there were trailing spaces" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed issue where user input wasn't accepted if there were trailing spaces" />
+    <MESSAGE value="Fixed hidden files being uploaded to repository" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed hidden files being uploaded to repository" />
   </component>
 </project>
