@@ -9,7 +9,9 @@ Created on Mon Dec  4 12:33:31 2023
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-
+import matplotlib.pyplot as plt
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Rectangle
 # Three tabs - 'Olivine data', 'Opx data', 'Cpx data'
 # (latter two are clinopyroxene and orthopyroxene data)
 
@@ -360,9 +362,7 @@ if __name__ == '__main__':
         check_mineral_composition(ortho_agg_data, mintype = 'orthopyroxene')
     
     
-    import matplotlib.pyplot as plt
-    from matplotlib.collections import PatchCollection
-    from matplotlib.patches import Rectangle
+
     grouped_data = get_opx_and_fo(oliv_data, ortho_data)
     
     # default - scatter = False
