@@ -60,22 +60,36 @@ def load_and_filter(input_file, mintype='olivine'):
     return data
 
 
-def group_output_data(oxides, elements):
+def group_output_data(oxides, elements, ratios, cat_props, mintype='olivine'):
     """
     Load in the aggregated data for the oxides and for the mineral formula calculation
     and group them into one DataFrame so we can write them out.
     Args:
         oxides: DataFrame of the aggregated oxides data.
         elements: DataFrame of the mineral formula calculation.
+        ratios: DataFrame of cation ratios (Fo/Mg#).
+        cat_props: DataFrame of cation numbers, from which we want the total.
 
     Returns:
         output_data: combined DataFrame.
     """
     # first we need to rename the columns in the oxides data
+    oxides['Oxide total'] = oxides.drop('counts', axis=1).sum(axis=1, numeric_only=True)
 
     oxides.rename(columns={'Na': 'NaO2', 'Mg': 'MgO', 'Al': 'Al2O3', 'Si': 'SiO2', 'Ca': 'CaO',
                            'Ti': 'TiO2', 'Cr': 'Cr2O3', 'Mn': 'MnO', 'Fe': 'FeO', 'Ni': 'NiO'}, inplace=True)
-    output_data = pd.concat([oxides, elements], axis=1)
+    oxides = oxides.reset_index()
+    elements = elements.reset_index(drop=True)
+    ratios = ratios.reset_index(drop=True)
+    cat_props = cat_props.reset_index(drop=True)
+    if 'olivine' in mintype:
+        ratios_col = ratios['Fo']
+    elif 'pyroxene' in mintype:
+        ratios_col = ratios['Mg#']
+    else:
+        raise ValueError('Mintype must be "olivine" or contain "pyroxene"')
+    cations_col = cat_props.rename(columns={'sum': 'Cation sum'})
+    output_data = pd.concat([oxides, elements, ratios_col, cations_col['Cation sum']], axis=1)
     return output_data
 
 

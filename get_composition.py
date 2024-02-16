@@ -82,14 +82,14 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
 
     elif 'pyroxene' in mintype.lower():
 
-        ratios['En'] = 100 * elements_out['Mg'] / (elements_out['Ca'] + elements_out['Mg']
-                                                   + elements_out['Fe'])
-        ratios['Fs'] = 100 * elements_out['Fe'] / (elements_out['Ca'] + elements_out['Mg']
-                                                   + elements_out['Fe'])
-        ratios['Wo'] = 100 * elements_out['Ca'] / (elements_out['Ca'] + elements_out['Mg']
-                                                   + elements_out['Fe'])
-        ratios['MgN'] = 100 * elements_out['Mg'] / (elements_out['Mg']
-                                                    + elements_out['Fe'])
+        ratios['En'] = elements_out['Mg'] / (elements_out['Ca'] + elements_out['Mg']
+                                             + elements_out['Fe'])  # * 100
+        ratios['Fs'] = elements_out['Fe'] / (elements_out['Ca'] + elements_out['Mg']
+                                             + elements_out['Fe'])  # * 100
+        ratios['Wo'] = elements_out['Ca'] / (elements_out['Ca'] + elements_out['Mg']
+                                             + elements_out['Fe'])
+        ratios['Mg#'] = elements_out['Mg'] / (elements_out['Mg']  # * 100
+                                              + elements_out['Fe'])  # * 100
         for idx, Si_val in enumerate(elements_out['Si']):
             if Si_val < 2:
 
@@ -139,4 +139,3 @@ def average_over_samples(data):
     data = data.groupby(['Project Path (2)', 'Project Path (3)'], sort=False)[names].mean()
     data['counts'] = counts
     return data
-

@@ -53,9 +53,10 @@ def get_rectangle_plot_data(olivine_data=False, pyroxene_data=False, x='Fo', y='
     return grouped_data
 
 
-def make_rectangle_plot(grouped_data, scatter=False, fill=False,
+def make_rectangle_plot(grouped_data, fname, scatter=False, fill=False,
                         x='Fo', y='Mg#',
-                        x_mineral='Olivine', y_mineral='Opx'):
+                        x_mineral='Olivine', y_mineral='Opx',
+                        figformat = 'eps'):
     """
     Generate a plot of x (default Fo) vs y (default Mg#) which plots a rectangle
     over the region covered by each area of the mineral.
@@ -65,6 +66,7 @@ def make_rectangle_plot(grouped_data, scatter=False, fill=False,
                                   to plot. This will likely be the output of
                                   get_opx_and_fo if using the default values for
                                   x and y.
+        fname (str): The name of the file we want to save the plot to.
         scatter (bool, optional): If False, (default) then the rectangle is plotted
                                   without the datapoints that make up that
                                   rectangle. if True, then the datapoints
@@ -77,6 +79,8 @@ def make_rectangle_plot(grouped_data, scatter=False, fill=False,
                                    from. This is only used for the x-label. Defaults to Olivine.
         y_mineral (str, optional): The mineral type for which you want to get the value of y
                                    from. This is only used for the y-label. Defaults to 'Opx' (orthopyroxene).
+        figformat (str, optional): Format we want to solve the figure into. Defaults to 'eps'.
+                                   Other formats include 'jpg', 'png' and 'svg'.
     Returns:
         None.
     """
@@ -137,5 +141,8 @@ def make_rectangle_plot(grouped_data, scatter=False, fill=False,
     # markerscale makes the coloured markers bigger on the legend so we can
     # see them better
     plt.legend(markerscale=3, fontsize=15)
+    figure = plt.gcf()
+    figure.set_size_inches(10, 6)
+    plt.savefig(fname, format=figformat, bbox_inches='tight')
     plt.show()
 
