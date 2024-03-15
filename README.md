@@ -11,3 +11,5 @@ mineral_analysis.py runs the main code. You will need all the other .py files in
 Note: If you are getting a permission denied error when running the code, ensure that the name of your output data
 (default 'output_data.xlsx') is not open in Excel. Excel "hogs" the file, meaning that other programs can't change it
 while it is open in Excel.
+
+Additional features TBD.
