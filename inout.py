@@ -50,10 +50,17 @@ def load_and_filter(input_file, mintype='olivine'):
         sheet_name = 1
     elif mintype.lower() == 'clinopyroxene':
         sheet_name = 2
+    elif mintype.lower() == 'spinel':
+        sheet_name = 3
     else:
-        raise ValueError('Mineral type should be olivine, orthopyroxene or clinopyroxene.')
+        raise ValueError('Mineral type should be olivine, spinel, orthopyroxene or clinopyroxene.')
     data = pd.read_excel(input_file, sheet_name=sheet_name).dropna()
-
+    print(data)
+    label_cols = ['Project Path (1)', 'Project Path (2)',  'Project Path (3)', 'Label']
+    # for col in data.columns:
+    #     print(col)
+    #     if col not in label_cols:
+    #         data[col] = pd.to_numeric(data[col])
     # First off - remove any data with total >101 or <99%
     data = data[(data.Total > 99) & (data.Total < 101)]
     # Then check mineral composition is sensible -
@@ -83,13 +90,21 @@ def group_output_data(oxides, elements, ratios, cat_props, mintype='olivine'):
     ratios = ratios.reset_index(drop=True)
     cat_props = cat_props.reset_index(drop=True)
     if 'olivine' in mintype:
-        ratios_col = ratios['Fo']
+        ratios_cols = ratios['Fo']
     elif 'pyroxene' in mintype:
-        ratios_col = ratios['Mg#']
+        ratios_cols = ratios['Mg#']
+    elif 'spinel' in mintype:
+        ratios_col1 = ratios['CrN']
+        ratios_col2 = ratios['MgN']
+
     else:
-        raise ValueError('Mintype must be "olivine" or contain "pyroxene"')
+        raise ValueError('Mintype must be "olivine", "spinel" or contain "pyroxene"')
     cations_col = cat_props.rename(columns={'sum': 'Cation sum'})
-    output_data = pd.concat([oxides, elements, ratios_col, cations_col['Cation sum']], axis=1)
+    if 'spinel' not in mintype:
+        output_data = pd.concat([oxides, elements, ratios_cols, cations_col['Cation sum']], axis=1)
+    else:
+        output_data = pd.concat([oxides, elements, ratios_col1, ratios_col2, cations_col['Cation sum']], axis=1)
+
     return output_data
 
 
@@ -113,17 +128,15 @@ def setup_output(data):
     return data
 
 
-def save_to_xlsx(path, olivdata=False, orthodata=False, clinodata=False):
+def save_to_xlsx(path, data, mintype):
     """
     Save data for the different mineral types into an Excel spreadsheet at location <path>.
     This will save to different sheets within the spreadsheet for each mineral type passed in.
 
     Args:
         path: Location/filename you want to save the output data to.
-        olivdata: Olivine data, if it exists. Default False, will save the data
-                  to the spreadsheet if a Pandas DataFrame is passed in.
-        orthodata: As above, but for orthopyroxene data.
-        clinodata: As above, but for clinopyroxene data.
+        data: Pandas DataFrame we wish to write.
+        mintype: Type of mineral. Determines the sheet name.
 
     Returns:
         None
@@ -133,15 +146,19 @@ def save_to_xlsx(path, olivdata=False, orthodata=False, clinodata=False):
     # mineral formula of this average.
     # first create ExcelWriter object
     writer = pd.ExcelWriter(path)
-    if olivdata is not False:
-        olivdata = setup_output(olivdata)
+    if 'olivine' in mintype:
+        olivdata = setup_output(data)
         olivdata.to_excel(writer, sheet_name='Olivine data', index=False)
 
-    if orthodata is not False:
-        orthodata = setup_output(orthodata)
+    if 'ortho' in mintype:
+        orthodata = setup_output(data)
         orthodata.to_excel(writer, sheet_name='Opx data', index=False)
 
-    if clinodata is not False:
-        clinodata = setup_output(clinodata)
+    if 'clino' in mintype:
+        clinodata = setup_output(data)
         clinodata.to_excel(writer, sheet_name='Cpx data', index=False)
+    if 'spinel' in mintype:
+        spineldata = setup_output(data)
+        spineldata.to_excel(writer, sheet_name='Spinel data', index=False)
+
     writer.close()

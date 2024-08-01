@@ -53,11 +53,13 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
 
     ox_props['sum'] = np.sum([ox_props[key] for key in ox_props.keys()], axis=0)
 
-    if 'olivine' in mintype.lower():
+    if 'olivine' in mintype.lower() or 'spinel' in mintype.lower():
         ox_factor = 4 / ox_props['sum']
 
     elif 'pyroxene' in mintype.lower():
         ox_factor = 6 / ox_props['sum']
+
+
 
     else:
         raise ValueError('Rock type not recognised, should be "olivine" or "pyroxene"')
@@ -72,15 +74,57 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
     cat_props['sum'] = np.sum([elements_out[key] for key in elements_out.keys()], axis=0)
 
     ratios = {}
-
     Al_IV = np.zeros(len(elements_out['Si']))
-    if 'olivine' in mintype.lower():
+
+
+    if 'spinel' in mintype.lower():
+        """
+        Spinel calculation
+        """
+        O_sum_temp2 = (3. / cat_props['sum']) * (
+                    2 * elements_out['Ti'] + 1.5 * elements_out['Al'] + 1.5 * elements_out['Cr'] + elements_out['Fe'] + \
+                    elements_out['Mn'] + elements_out['Mg'])
+        O_def = 4 - O_sum_temp2
+        Fe3 = 2. * O_def
+        Fe2 = elements_out['Fe'] * (3. / cat_props['sum']) - Fe3
+        cat_tot_temp2 = cat_props['sum'] - elements_out['Fe'] + Fe3 + Fe2
+        O_sum_temp3 = (3. / cat_tot_temp2) * (
+                    2 * elements_out['Ti'] + 1.5 * elements_out['Al'] + 1.5 * elements_out['Cr'] + Fe2 + 1.5 * Fe3 +
+                    elements_out['Mn'] + elements_out['Mg'])
+        cat_factor = (3 - Fe2 - Fe3) / (elements_out['Ti'] + elements_out['Al'] + elements_out['Cr'] +
+                                         elements_out['Mn'] + elements_out['Mg'])
+
+        # overwrite the temporary values with the correct values
+        for idx, key in enumerate(elements_out.keys()):
+            elements_out[key] = elements_out[key] * cat_factor
+
+        cat_tot = np.sum([elem for elem in elements_out.keys()]) + Fe2 + Fe3
+        ox_Ti = 2. * elements_out['Ti']
+        ox_Al = 1.5 * elements_out['Al']
+        ox_Cr = 1.5 * elements_out['Cr']
+        ox_Mn = elements_out['Mn']
+        ox_Mg = elements_out['Mg']
+        ox_Fe2 = Fe2
+        ox_Fe3 = 1.5 * Fe3
+        O_sum = ox_Ti + ox_Al + ox_Cr + ox_Mn + ox_Mg + ox_Fe2 + ox_Fe3
+        ratios['CrN'] = 100 * elements_out['Cr'] / (elements_out['Cr'] + elements_out['Al'])
+        ratios['MgN'] = 100 * elements_out['Mg'] / (Fe2 + elements_out['Mg'])
+        ox_props['O_sum'] = O_sum
+        cat_props['cat_tot'] = cat_tot
+
+    elif 'olivine' in mintype.lower():
+        """
+        Olivine calculation
+        """
         # Fo=100.*Mg./(Fe+Mg);
         # Fa=100.*Fe./(Fe+Mg);
         ratios['Fo'] = elements_out['Mg'] / (elements_out['Fe'] + elements_out['Mg'])
         ratios['Fe'] = elements_out['Fe'] / (elements_out['Fe'] + elements_out['Mg'])
 
     elif 'pyroxene' in mintype.lower():
+        """
+        Pyroxene calculation
+        """
 
         ratios['En'] = elements_out['Mg'] / (elements_out['Ca'] + elements_out['Mg']
                                              + elements_out['Fe'])  # * 100

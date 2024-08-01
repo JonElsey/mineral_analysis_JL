@@ -7,22 +7,22 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import numpy as np
 
-def get_rectangle_plot_data(olivine_data=False, pyroxene_data=False, x='Fo', y='Mg#'):
+def get_rectangle_plot_data(xdata=False, ydata=False, x='Fo', y='Mg#'):
     """
     Obtain a DataFrame containing x and y data that you wish to plot using make_rectangle_plot.
 
     Args:
-        olivine_data: DataFrame of olivine data that we want to group.
+        xdata: DataFrame of olivine data that we want to group.
                       Default False, im which case we try and take both
                       x and y from the pyroxene data.
-        pyroxene_data: DataFrame of pyroxene data that we want to group.
+        ydata: DataFrame of pyroxene data that we want to group.
                        Default False, im which case we try and take both
                        x and y from the olivine data.
         x: Variable name to be added to the output file from the olivine data. Default is 'Fo'.
-           If only one of olivine_data or pyroxene_data are DataFrames, then both x and y will
+           If only one of xdata or ydata are DataFrames, then both x and y will
            be loaded from that one file.
         y: Variable name to be added to the output file from the pyroxene data. Default is 'Mg#'.
-           If only one of olivine_data or pyroxene_data are DataFrames, then both x and y will
+           If only one of xdata or ydata are DataFrames, then both x and y will
            be loaded from that one file.
 
     Returns:
@@ -32,31 +32,30 @@ def get_rectangle_plot_data(olivine_data=False, pyroxene_data=False, x='Fo', y='
     # to do this then, we need to create a new dataset, grouping fo and mg# by sample
 
     # first take just the sample name and x from the olivines.
-    if olivine_data is not False:
-        grouped_data = olivine_data[['Project Path (2)', x]]
+    if xdata is not False:
+        grouped_data = xdata[['Project Path (2)', x]]
 
         # try and then get y from the pyroxene data, else take it from the olivines.
-        if pyroxene_data is not False:
-            grouped_data = grouped_data.merge(pyroxene_data[['Project Path (2)', y]])
+        if ydata is not False:
+            grouped_data = grouped_data.merge(ydata[['Project Path (2)', y]])
         else:
-            grouped_data = grouped_data.merge(olivine_data[['Project Path (2)', y]])
+            grouped_data = grouped_data.merge(xdata[['Project Path (2)', y]])
 
     # try and load in pyroxene data for both x and y otherwise
-    elif pyroxene_data is not False:
-        grouped_data = pyroxene_data[['Project Path (2)', x]]
-        grouped_data = grouped_data.merge(pyroxene_data[['Project Path (2)', y]])
+    elif ydata is not False:
+        grouped_data = ydata[['Project Path (2)', x]]
+        grouped_data = grouped_data.merge(ydata[['Project Path (2)', y]])
 
     else:
-        raise ValueError('You must pass in either some olivine or pyroxene data')
+        raise ValueError('You must pass in data for both the x and y axes')
 
-    # grouped_data.merge(clino_data[['Project Path (2)', 'Mg#']])
     return grouped_data
 
 
 def make_rectangle_plot(grouped_data, fname, scatter=False, fill=False,
                         x='Fo', y='Mg#',
                         x_mineral='Olivine', y_mineral='Opx',
-                        figformat = 'eps'):
+                        figformat='eps'):
     """
     Generate a plot of x (default Fo) vs y (default Mg#) which plots a rectangle
     over the region covered by each area of the mineral.
