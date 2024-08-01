@@ -27,10 +27,21 @@ data_filename = get_data_filename(fname=False)
 # Load in the data and perform simple filtering to remove outliers
 mintypes = ['olivine', 'orthopyroxene', 'clinopyroxene', 'spinel']
 recplot = True
-data = elements = ratios = cat_props = ox_props = {} #  store data in a dictionary with the key as the mineral type
-agg_data = agg_elements = agg_ratios = agg_cat_props = agg_ox_props = {}  # likewise aggregated data
+# store data in a dictionary with the key as the mineral type
+data = {}
+elements = {}
+ratios = {}
+cat_props = {}
+ox_props = {}
+# likewise aggregated data
+agg_data = {}
+agg_elements = {}
+agg_ratios = {}
+agg_cat_props = {}
+agg_ox_props = {}
 
 for mintype in mintypes:
+    print(f'Analysing {mintype} data...')
     data[mintype] = load_and_filter(data_filename, mintype=mintype)
     # check the mineral composition - perform the scaling, calculate Fo etc.
     elements[mintype], ratios[mintype], cat_props[mintype], ox_props[mintype] = \
@@ -39,7 +50,7 @@ for mintype in mintypes:
     # quality checking
     data[mintype], elements[mintype], ratios[mintype], cat_props[mintype] = \
         cation_quality_check(data[mintype], elements[mintype], ratios[mintype],
-                             cat_props[mintype])
+                             cat_props[mintype], mintype=mintype)
 
     # Now do the same, but averaging over each area.
     agg_data[mintype] = average_over_samples(data[mintype])
@@ -49,10 +60,10 @@ for mintype in mintypes:
         check_mineral_composition(agg_data[mintype], mintype=mintype)
 
     # Generate output file
-    output_data = group_output_data(agg_data[mintype], agg_elements[mintype], agg_ratios[mintype], agg_cat_props[mintype])
+    output_data = group_output_data(agg_data[mintype], agg_elements[mintype], agg_ratios[mintype],
+                                    agg_cat_props[mintype])
     output_filename = 'output_data.xlsx'
-    save_to_xlsx(output_filename, data[mintype], mintype=mintype)
-
+    save_to_xlsx(output_filename, output_data, mintype=mintype)
 
 if recplot:
     xtype = 'olivine'
@@ -60,7 +71,7 @@ if recplot:
     # group up the data to pass into make_rectangle_plot
     # x and y are specified here, the defaults are the same as what is written here (Fo and Mg# respectively)
 
-    grouped_data = get_rectangle_plot_data(xdata=data[xtype],ydata=data[ytype],
+    grouped_data = get_rectangle_plot_data(xdata=data[xtype], ydata=data[ytype],
                                            x='Fo', y='Mg#')
     make_rectangle_plot(grouped_data, output_figure_fname, figformat=output_figure_format)
 
