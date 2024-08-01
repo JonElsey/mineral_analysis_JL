@@ -1,4 +1,3 @@
-
 def cation_quality_check(data, elements, ratios, cat_props, error=0.01, mintype='olivine'):
     """
     Perform a quality check on the data to remove elements that we don't wish to keep,
@@ -27,7 +26,6 @@ def cation_quality_check(data, elements, ratios, cat_props, error=0.01, mintype=
 
     """
 
-
     flag = True
 
     print(f'\n*******************************\nCation number quality checking for {mintype} input data\
@@ -41,7 +39,7 @@ def cation_quality_check(data, elements, ratios, cat_props, error=0.01, mintype=
             cation_count = 3
             print(f'\nCurrently accepting values within 3 ± {error}\n')
 
-        elif 'pyroxene' in mintype.lower():
+        elif 'pyroxene' in mintype.lower() or 'spinel' in mintype.lower():
             cation_count = 4
             print(f'\nCurrently accepting values within 4 ± {error}\n')
 

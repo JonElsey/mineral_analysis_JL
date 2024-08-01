@@ -56,7 +56,7 @@ def load_and_filter(input_file, mintype='olivine'):
         raise ValueError('Mineral type should be olivine, spinel, orthopyroxene or clinopyroxene.')
     data = pd.read_excel(input_file, sheet_name=sheet_name).dropna()
     print(data)
-    label_cols = ['Project Path (1)', 'Project Path (2)',  'Project Path (3)', 'Label']
+    label_cols = ['Project Path (1)', 'Project Path (2)', 'Project Path (3)', 'Label']
     # for col in data.columns:
     #     print(col)
     #     if col not in label_cols:
@@ -145,7 +145,7 @@ def save_to_xlsx(path, data, mintype):
     # average concentrations for each of the elements measured (plus its total);
     # mineral formula of this average.
     # first create ExcelWriter object
-    writer = pd.ExcelWriter(path)
+    writer = pd.ExcelWriter(path, mode='a', if_sheet_exists='replace')
     if 'olivine' in mintype:
         olivdata = setup_output(data)
         olivdata.to_excel(writer, sheet_name='Olivine data', index=False)

@@ -98,7 +98,7 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
         for idx, key in enumerate(elements_out.keys()):
             elements_out[key] = elements_out[key] * cat_factor
 
-        cat_tot = np.sum([elem for elem in elements_out.keys()]) + Fe2 + Fe3
+        cat_tot = np.sum(np.array([elements_out[key] for key in elements_out.keys()])) + Fe2 + Fe3
         ox_Ti = 2. * elements_out['Ti']
         ox_Al = 1.5 * elements_out['Al']
         ox_Cr = 1.5 * elements_out['Cr']

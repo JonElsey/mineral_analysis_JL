@@ -61,13 +61,13 @@ for mintype in mintypes:
 
     # Generate output file
     output_data = group_output_data(agg_data[mintype], agg_elements[mintype], agg_ratios[mintype],
-                                    agg_cat_props[mintype])
+                                    agg_cat_props[mintype], mintype=mintype)
     output_filename = 'output_data.xlsx'
     save_to_xlsx(output_filename, output_data, mintype=mintype)
 
 if recplot:
     xtype = 'olivine'
-    ytype = 'orthopyroxene'
+    ytype = 'clinopyroxene'
     # group up the data to pass into make_rectangle_plot
     # x and y are specified here, the defaults are the same as what is written here (Fo and Mg# respectively)
 
