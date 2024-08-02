@@ -31,27 +31,41 @@ def cation_quality_check(data, elements, ratios, cat_props, error=0.01, mintype=
     print(f'\n*******************************\nCation number quality checking for {mintype} input data\
           \n*******************************')
 
+    yesses = ['y', 'yes', 'accept']
+    nos = ['n', 'no', 'change']
     # Keep allowing for changes to the error until the user is satisfied with
     # the number of rejected samples
+    if 'spinel' in mintype.lower(): # set starting error specifically for spinel as 0.002
+        error = 0.002
+
     while flag:
-        init_num_samples = len(cat_props['sum'])
-        if 'olivine' in mintype.lower():
+
+        if 'spinel' in mintype.lower():
+            init_num_samples = len(cat_props['sum'])
             cation_count = 3
             print(f'\nCurrently accepting values within 3 ± {error}\n')
+            new_cat_props = cat_props[(cation_count - error < cat_props['sum']) &
+                                      (cat_props['sum'] < cation_count + error)]
+            ratio = 100 * (init_num_samples - len(new_cat_props['sum'])) / init_num_samples
 
-        elif 'pyroxene' in mintype.lower() or 'spinel' in mintype.lower():
-            cation_count = 4
-            print(f'\nCurrently accepting values within 4 ± {error}\n')
+        else:
+            init_num_samples = len(cat_props['sum'])
 
-        new_cat_props = cat_props[(cation_count - error < cat_props['sum']) & (cat_props['sum'] < cation_count + error)]
-        ratio = 100 * (init_num_samples - len(new_cat_props['sum'])) / init_num_samples
+            if 'olivine' in mintype.lower():
+                cation_count = 3
+                print(f'\nCurrently accepting values within 3 ± {error}\n')
+
+            elif 'pyroxene' in mintype.lower():
+                cation_count = 4
+                print(f'\nCurrently accepting values within 4 ± {error}\n')
+
+            new_cat_props = cat_props[(cation_count - error < cat_props['sum']) & (cat_props['sum'] < cation_count + error)]
+            ratio = 100 * (init_num_samples - len(new_cat_props['sum'])) / init_num_samples
 
         print(f"Removed {init_num_samples - len(new_cat_props['sum'])} of " \
               f"{init_num_samples} total samples ({ratio:.3f}%) based on current error limit")
 
         prompt = input('Accept this number of discarded values, or change the error limits?\n')
-        yesses = ['y', 'yes', 'accept']
-        nos = ['n', 'no', 'change']
 
         # if not happy - make sure the user inputs a numeric value else the code
         # will stay in this loop

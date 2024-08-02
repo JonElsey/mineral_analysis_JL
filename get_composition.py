@@ -81,14 +81,14 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
         """
         Spinel calculation
         """
-        O_sum_temp2 = (3. / cat_props['sum']) * (
+        O_sum_temp2 = (3 / cat_props['sum']) * (
                     2 * elements_out['Ti'] + 1.5 * elements_out['Al'] + 1.5 * elements_out['Cr'] + elements_out['Fe'] + \
                     elements_out['Mn'] + elements_out['Mg'])
         O_def = 4 - O_sum_temp2
-        Fe3 = 2. * O_def
-        Fe2 = elements_out['Fe'] * (3. / cat_props['sum']) - Fe3
+        Fe3 = 2 * O_def
+        Fe2 = elements_out['Fe'] * (3 / cat_props['sum']) - Fe3
         cat_tot_temp2 = cat_props['sum'] - elements_out['Fe'] + Fe3 + Fe2
-        O_sum_temp3 = (3. / cat_tot_temp2) * (
+        O_sum_temp3 = (3 / cat_tot_temp2) * (
                     2 * elements_out['Ti'] + 1.5 * elements_out['Al'] + 1.5 * elements_out['Cr'] + Fe2 + 1.5 * Fe3 +
                     elements_out['Mn'] + elements_out['Mg'])
         cat_factor = (3 - Fe2 - Fe3) / (elements_out['Ti'] + elements_out['Al'] + elements_out['Cr'] +
@@ -96,9 +96,13 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
 
         # overwrite the temporary values with the correct values
         for idx, key in enumerate(elements_out.keys()):
-            elements_out[key] = elements_out[key] * cat_factor
+            if key in ['Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Fe']:
+                elements_out[key] = elements_out[key] * cat_factor
 
-        cat_tot = np.sum(np.array([elements_out[key] for key in elements_out.keys()])) + Fe2 + Fe3
+        # cat_tot = np.sum(np.array([elements_out[key] for key in elements_out.keys() \
+        #                            if key in ['Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Fe']]), axis=0) + Fe2 + Fe3
+        cat_tot = elements_out['Ti'] + elements_out['Al'] + elements_out['Cr'] + elements_out['Mn'] + elements_out['Mg'] \
+                        + elements_out['Fe'] + Fe2 + Fe3
         ox_Ti = 2. * elements_out['Ti']
         ox_Al = 1.5 * elements_out['Al']
         ox_Cr = 1.5 * elements_out['Cr']
@@ -157,29 +161,3 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
     return elements_out, ratios, cat_props, ox_props
 
 
-# steps above = quality control
-# we then need to average over the samples (including this filtering), then perform the mineral analysis again
-def average_over_samples(data):
-    """
-    Average over the samples to obtain a new DataFrame which contains the same data,
-    but as an average for each area.
-
-    Args:
-        data: input DataFrame that you wish to average over.
-
-    Returns:
-        data: as input argument data, but now with the samples averaged.
-    """
-    names = ['Si', 'Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Ni', 'Fe', 'Ca', 'Na', 'K']
-    # remove elements that aren't in the dataset else the code will throw an error
-    for name in names:
-        if name not in data.columns:
-            names.remove(name)
-
-    # get the number of measurements going into each region of each sample
-    counts = data.value_counts(['Project Path (2)', 'Project Path (3)'])
-    # take the mean of all the regions of all the samples, then add the number of
-    # measurements used to get this mean as a new variable
-    data = data.groupby(['Project Path (2)', 'Project Path (3)'], sort=False)[names].mean()
-    data['counts'] = counts
-    return data

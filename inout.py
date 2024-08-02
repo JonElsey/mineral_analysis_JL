@@ -55,6 +55,8 @@ def load_and_filter(input_file, mintype='olivine'):
     else:
         raise ValueError('Mineral type should be olivine, spinel, orthopyroxene or clinopyroxene.')
     data = pd.read_excel(input_file, sheet_name=sheet_name).dropna()
+    # Remove commas as these break things later on
+    data = data.replace(',', ' ', regex=True)
     print(data)
     label_cols = ['Project Path (1)', 'Project Path (2)', 'Project Path (3)', 'Label']
     # for col in data.columns:
@@ -67,7 +69,7 @@ def load_and_filter(input_file, mintype='olivine'):
     return data
 
 
-def group_output_data(oxides, elements, ratios, cat_props, mintype='olivine'):
+def group_output_data(oxides, elements, ratios, cat_props, mintype='olivine', sampleavg=False):
     """
     Load in the aggregated data for the oxides and for the mineral formula calculation
     and group them into one DataFrame so we can write them out.
@@ -86,9 +88,10 @@ def group_output_data(oxides, elements, ratios, cat_props, mintype='olivine'):
     oxides.rename(columns={'Na': 'NaO2', 'Mg': 'MgO', 'Al': 'Al2O3', 'Si': 'SiO2', 'Ca': 'CaO',
                            'Ti': 'TiO2', 'Cr': 'Cr2O3', 'Mn': 'MnO', 'Fe': 'FeO', 'Ni': 'NiO'}, inplace=True)
     oxides = oxides.reset_index()
-    elements = elements.reset_index(drop=True)
     ratios = ratios.reset_index(drop=True)
     cat_props = cat_props.reset_index(drop=True)
+    elements = elements.reset_index(drop=True)
+
     if 'olivine' in mintype:
         ratios_cols = ratios['Fo']
     elif 'pyroxene' in mintype:
@@ -108,7 +111,7 @@ def group_output_data(oxides, elements, ratios, cat_props, mintype='olivine'):
     return output_data
 
 
-def setup_output(data):
+def setup_output(data, avg=False):
     """
     Perform a few tidy-up steps on the data we wish to write out. Specifically,
     move the number of points averaged column to the end, and rename some of the
@@ -120,15 +123,22 @@ def setup_output(data):
     Returns:
         data: the amended input DataFrame.
     """
-    column_to_move = data.pop("counts")
-    data.insert(len(data.columns), "counts", column_to_move)
-    data = data.reset_index()  # reset index so we can rename the path columns
-    data.rename(columns={'Project Path (2)': 'Sample', 'Project Path (3)': 'Area',
-                         'counts': 'Number of datapoints averaged'}, inplace=True)
+
+    if not avg:
+        column_to_move = data.pop("counts")
+        data.insert(len(data.columns), "counts", column_to_move)
+        data = data.reset_index()  # reset index so we can rename the path columns
+        data.rename(columns={'Project Path (2)': 'Sample', 'Project Path (3)': 'Area',
+                             'counts': 'Number of datapoints averaged'}, inplace=True)
+    else:
+        column_to_move = data.pop("counts")
+        data.insert(len(data.columns), "counts", column_to_move)
+        data.rename(columns={'Project Path (2)': 'Sample',
+                             'counts': 'Number of areas averaged'}, inplace=True)
     return data
 
 
-def save_to_xlsx(path, data, mintype):
+def save_to_xlsx(path, data, avgdata=False, mintype='olivine'):
     """
     Save data for the different mineral types into an Excel spreadsheet at location <path>.
     This will save to different sheets within the spreadsheet for each mineral type passed in.
@@ -145,20 +155,32 @@ def save_to_xlsx(path, data, mintype):
     # average concentrations for each of the elements measured (plus its total);
     # mineral formula of this average.
     # first create ExcelWriter object
-    writer = pd.ExcelWriter(path, mode='a', if_sheet_exists='replace')
+    if isinstance(avgdata, pd.DataFrame):
+        avgout = setup_output(avgdata, avg=True)
+    writer = pd.ExcelWriter(path, mode='w')#, if_sheet_exists='replace')
+
     if 'olivine' in mintype:
         olivdata = setup_output(data)
-        olivdata.to_excel(writer, sheet_name='Olivine data', index=False)
+        olivdata.to_excel(writer, sheet_name='Olivine data')
+        if isinstance(avgdata, pd.DataFrame):
+            avgout.to_excel(writer, sheet_name='Olivine average',)
 
     if 'ortho' in mintype:
         orthodata = setup_output(data)
-        orthodata.to_excel(writer, sheet_name='Opx data', index=False)
+        orthodata.to_excel(writer, sheet_name='Opx data')
+        if isinstance(avgdata, pd.DataFrame):
+            avgout.to_excel(writer, sheet_name='Opx average')
 
     if 'clino' in mintype:
         clinodata = setup_output(data)
-        clinodata.to_excel(writer, sheet_name='Cpx data', index=False)
+        clinodata.to_excel(writer, sheet_name='Cpx data')
+        if isinstance(avgdata, pd.DataFrame):
+            avgout.to_excel(writer, sheet_name='Cpx average')
+
     if 'spinel' in mintype:
         spineldata = setup_output(data)
-        spineldata.to_excel(writer, sheet_name='Spinel data', index=False)
+        spineldata.to_excel(writer, sheet_name='Spinel data')
+        if isinstance(avgdata, pd.DataFrame):
+            avgout.to_excel(writer, sheet_name='Spinel average')
 
     writer.close()
