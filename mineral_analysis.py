@@ -26,7 +26,7 @@ output_figure_format = 'eps'  # eps to save to eps, png to save to png, etc.
 data_filename = get_data_filename(fname=False)
 
 # Load in the data and perform simple filtering to remove outliers
-mintypes = ['olivine']#, 'orthopyroxene', 'clinopyroxene', 'spinel']
+mintypes = ['olivine', 'orthopyroxene', 'clinopyroxene', 'spinel']
 recplot = False
 # store data in a dictionary with the key as the mineral type
 data = {}
@@ -45,8 +45,12 @@ sample_average_elements = {}
 sample_average_cat_props = {}
 sample_average_ratios = {}
 sample_average_ox_props = {}
+
+# Main analysis loop.
 for mintype in mintypes:
     print(f'Analysing {mintype} data...')
+
+    # Load in and perform data filtering - ensure that things are within sensible limits
     data[mintype] = load_and_filter(data_filename, mintype=mintype)
     # check the mineral composition - perform the scaling, calculate Fo etc.
     elements[mintype], ratios[mintype], cat_props[mintype], ox_props[mintype] = \
@@ -57,7 +61,7 @@ for mintype in mintypes:
         cation_quality_check(data[mintype], elements[mintype], ratios[mintype],
                              cat_props[mintype], mintype=mintype)
 
-    # Now do the same, but averaging over each area.
+    # Now do the same, but averaging over each area, with the quality-checked data only.
     agg_data[mintype] = average_over_areas(data[mintype])
 
     # Repeat the composition calculation
@@ -67,13 +71,16 @@ for mintype in mintypes:
     # Final averaging process - do averaging for the whole sample now.
     sample_average_data[mintype] = average_over_samples(agg_data[mintype])
     # Repeat the composition calculation again for the sample averages
-    (sample_average_elements[mintype], sample_average_ratios[mintype], sample_average_cat_props[mintype],
+    (sample_average_elements[mintype],
+     sample_average_ratios[mintype],
+     sample_average_cat_props[mintype],
      sample_average_ox_props[mintype]) = \
         check_mineral_composition(sample_average_data[mintype], mintype=mintype)
 
-    # Generate output file
+    # Generate output file - first group together all the data
     output_data = group_output_data(agg_data[mintype], agg_elements[mintype], agg_ratios[mintype],
                                     agg_cat_props[mintype], mintype=mintype)
+    # likewise for the sample average data
     sample_avg_output_data = group_output_data(sample_average_data[mintype], sample_average_elements[mintype],
                                                sample_average_ratios[mintype],
                                     sample_average_cat_props[mintype], mintype=mintype, sampleavg=True)

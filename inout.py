@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 import pandas as pd
-
+import os
 
 def get_data_filename(fname=False):
     """
@@ -54,7 +54,10 @@ def load_and_filter(input_file, mintype='olivine'):
         sheet_name = 3
     else:
         raise ValueError('Mineral type should be olivine, spinel, orthopyroxene or clinopyroxene.')
-    data = pd.read_excel(input_file, sheet_name=sheet_name).dropna()
+    try:
+        data = pd.read_excel(input_file, sheet_name=sheet_name).dropna()
+    except:
+        raise FileNotFoundError('Please input a valid input Excel spreadsheet.')
     # Remove commas as these break things later on
     data = data.replace(',', ' ', regex=True)
     print(data)
@@ -157,30 +160,37 @@ def save_to_xlsx(path, data, avgdata=False, mintype='olivine'):
     # first create ExcelWriter object
     if isinstance(avgdata, pd.DataFrame):
         avgout = setup_output(avgdata, avg=True)
-    writer = pd.ExcelWriter(path, mode='w')#, if_sheet_exists='replace')
 
-    if 'olivine' in mintype:
-        olivdata = setup_output(data)
-        olivdata.to_excel(writer, sheet_name='Olivine data')
-        if isinstance(avgdata, pd.DataFrame):
-            avgout.to_excel(writer, sheet_name='Olivine average',)
+    # If file doesn't exist already, create it.
+    if not os.path.exists(path):
+        excel_writer = pd.ExcelWriter(path, mode='w')
+    # Otherwise, append to it.
+    else:
+        excel_writer = pd.ExcelWriter(path, mode='a', if_sheet_exists='replace')
 
-    if 'ortho' in mintype:
-        orthodata = setup_output(data)
-        orthodata.to_excel(writer, sheet_name='Opx data')
-        if isinstance(avgdata, pd.DataFrame):
-            avgout.to_excel(writer, sheet_name='Opx average')
+    with excel_writer as writer:
 
-    if 'clino' in mintype:
-        clinodata = setup_output(data)
-        clinodata.to_excel(writer, sheet_name='Cpx data')
-        if isinstance(avgdata, pd.DataFrame):
-            avgout.to_excel(writer, sheet_name='Cpx average')
+        if 'olivine' in mintype:
+            olivdata = setup_output(data)
+            olivdata.to_excel(writer, sheet_name='Olivine data')
+            if isinstance(avgdata, pd.DataFrame):
+                avgout.to_excel(writer, sheet_name='Olivine average',)
 
-    if 'spinel' in mintype:
-        spineldata = setup_output(data)
-        spineldata.to_excel(writer, sheet_name='Spinel data')
-        if isinstance(avgdata, pd.DataFrame):
-            avgout.to_excel(writer, sheet_name='Spinel average')
+        if 'ortho' in mintype:
+            orthodata = setup_output(data)
+            orthodata.to_excel(writer, sheet_name='Opx data')
+            if isinstance(avgdata, pd.DataFrame):
+                avgout.to_excel(writer, sheet_name='Opx average')
 
-    writer.close()
+        if 'clino' in mintype:
+            clinodata = setup_output(data)
+            clinodata.to_excel(writer, sheet_name='Cpx data')
+            if isinstance(avgdata, pd.DataFrame):
+                avgout.to_excel(writer, sheet_name='Cpx average')
+
+        if 'spinel' in mintype:
+            spineldata = setup_output(data)
+            spineldata.to_excel(writer, sheet_name='Spinel data')
+            if isinstance(avgdata, pd.DataFrame):
+                avgout.to_excel(writer, sheet_name='Spinel average')
+

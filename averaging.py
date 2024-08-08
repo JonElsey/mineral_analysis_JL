@@ -1,5 +1,5 @@
 # steps above = quality control
-# we then need to average over the samples (including this filtering), then perform the mineral analysis again
+# we then need to average over the samples (including this filtering), then perform the element analysis again
 import pandas as pd
 import numpy as np
 def average_over_areas(data):
@@ -44,6 +44,14 @@ def average_over_samples(agg_data):
     for name in names:
         if name not in agg_data.columns:
             names.remove(name)
+    # calculate 2sd and deltas
+    sd = {}
+    delta = {}
+    for element in names:
+
+        sd[f'2SD_{element}'] = agg_data[element].groupby('Project Path (2)').std() * 2
+        delta[f'delta_{element}'] = (agg_data[element].groupby('Project Path (2)').max() -
+                                        agg_data[element].groupby('Project Path (2)').min())
 
     # get the number of areas going into each region of each sample
     counts = agg_data.value_counts(['Project Path (2)']).reset_index()
@@ -51,11 +59,10 @@ def average_over_samples(agg_data):
     # measurements used to get this mean as a new variable
     agg_data = agg_data.groupby(['Project Path (2)'], sort=False)[names].mean()
     agg_data['counts'] = counts.set_index(agg_data.index)['count']
-    # calculate 2sd and deltas
-    for mineral in names:
-        agg_data[f'2SD_{mineral}'] = np.std(agg_data[mineral]) * 2
-    for mineral in names:
-        agg_data[f'delta_{mineral}'] = agg_data[mineral].max() - agg_data[mineral].min()
+
+    for element in names:
+        agg_data[f'2SD_{element}'] = sd[f'2SD_{element}']
+        agg_data[f'delta_{element}'] = delta[f'delta_{element}']
 
     sample_average_data = agg_data
     return sample_average_data
