@@ -3,3 +3,5 @@ xlrd
 openpyxl
 pandas
 matplotlib
+scipy
+mpld3

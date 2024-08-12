@@ -7,7 +7,7 @@ from get_composition import check_mineral_composition
 from averaging import average_over_areas, average_over_samples
 from inout import load_and_filter, get_data_filename, save_to_xlsx, group_output_data
 from quality_checking import cation_quality_check
-from plotting import get_rectangle_plot_data, make_rectangle_plot
+from plotting_functions import get_rectangle_plot_data, make_rectangle_plot
 
 # load in the data from the spreadsheet and separate each tab into a different
 # DataFrame. This will prompt you to select a file from whatever file browser
@@ -23,7 +23,7 @@ output_figure_fname = 'rectangle_plot.eps'
 output_figure_format = 'eps'  # eps to save to eps, png to save to png, etc.
 # Replace False with '<your_filename>' if you don't want to use the browser
 # (e.g. if automating this with a script)
-data_filename = get_data_filename(fname='INPUT.xls')
+data_filename = get_data_filename(fname='INPUT_depthtest.xls')
 
 # Load in the data and perform simple filtering to remove outliers
 mintypes = ['olivine', 'orthopyroxene', 'clinopyroxene', 'spinel']

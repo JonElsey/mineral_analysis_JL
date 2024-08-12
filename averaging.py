@@ -13,7 +13,8 @@ def average_over_areas(data):
     Returns:
         data: as input argument data, but now with the areas averaged.
     """
-    names = ['Si', 'Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Ni', 'Fe', 'Ca', 'Na', 'K']
+    names = ['Depth', 'Si', 'Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Ni', 'Fe', 'Ca', 'Na', 'K'
+             ]
     # remove elements that aren't in the dataset else the code will throw an error
     for name in names:
         if name not in data.columns:
@@ -40,7 +41,7 @@ def average_over_samples(agg_data, oxides=True):
         data: as input argument data, but now with the samples averaged.
     """
     if oxides:
-        names = ['Si', 'Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Ni', 'Fe', 'Ca', 'Na', 'K']
+        names = ['Depth', 'Si', 'Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Ni', 'Fe', 'Ca', 'Na', 'K']
     # remove elements that aren't in the dataset else the code will throw an error
         for name in names:
             if name not in agg_data.columns:
@@ -75,7 +76,7 @@ def average_over_samples(agg_data, oxides=True):
 
     for element in names:
         # write the standard deviation into the variable by first converting to str
-        agg_data[element] = agg_data[element].round(4).astype(str) + ' ± ' + sd[f'2SD_{element}'].astype(str)
+        agg_data[element] = agg_data[element].round(4).astype(str) + ' ± ' + sd[f'2SD_{element}'].round(3).astype(str)
         agg_data[f'delta_{element}'] = delta[f'delta_{element}']
 
     sample_average_data = agg_data

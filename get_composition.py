@@ -149,7 +149,12 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
                     Al_IV[idx] = 2 - Si_val
             else:
                 Al_IV[idx] = 0
-
+    # Stick depth column into oxide properties - to keep around for later
+    try:
+        ox_props['Depth'] = data['Depth']
+    except Exception as e:
+        print(e)
+        print('No depth column found in input data - output will not have it either')
     # turn our dictionaries into Pandas DataFrame objects, so we can manipulate
     # them later with the Pandas library
     elements_out = pd.DataFrame.from_dict(elements_out)
