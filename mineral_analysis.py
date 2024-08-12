@@ -23,7 +23,7 @@ output_figure_fname = 'rectangle_plot.eps'
 output_figure_format = 'eps'  # eps to save to eps, png to save to png, etc.
 # Replace False with '<your_filename>' if you don't want to use the browser
 # (e.g. if automating this with a script)
-data_filename = get_data_filename(fname=False)
+data_filename = get_data_filename(fname='INPUT.xls')
 
 # Load in the data and perform simple filtering to remove outliers
 mintypes = ['olivine', 'orthopyroxene', 'clinopyroxene', 'spinel']
@@ -44,7 +44,6 @@ sample_average_data = {}
 sample_average_elements = {}
 sample_average_cat_props = {}
 sample_average_ratios = {}
-sample_average_ox_props = {}
 
 # Main analysis loop.
 for mintype in mintypes:
@@ -70,12 +69,12 @@ for mintype in mintypes:
 
     # Final averaging process - do averaging for the whole sample now.
     sample_average_data[mintype] = average_over_samples(agg_data[mintype])
-    # Repeat the composition calculation again for the sample averages
-    (sample_average_elements[mintype],
-     sample_average_ratios[mintype],
-     sample_average_cat_props[mintype],
-     sample_average_ox_props[mintype]) = \
-        check_mineral_composition(sample_average_data[mintype], mintype=mintype)
+    sample_average_ratios[mintype] = average_over_samples(agg_ratios[mintype],
+                                                         oxides=False)
+    sample_average_cat_props[mintype] = average_over_samples(agg_cat_props[mintype],
+                                                             oxides=False)
+    sample_average_elements[mintype] = average_over_samples(agg_ox_props[mintype],
+                                                            oxides=False)
 
     # Generate output file - first group together all the data
     output_data = group_output_data(agg_data[mintype], agg_elements[mintype], agg_ratios[mintype],

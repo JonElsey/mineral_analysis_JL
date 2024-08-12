@@ -161,3 +161,18 @@ def check_mineral_composition(data, names=('Si', 'Ti', 'Al', 'Cr', 'Mn',
     return elements_out, ratios, cat_props, ox_props
 
 
+def calc_ratio_uncertainty(ratios):
+    """
+    Calculate the 2SD and delta (max - min) for the ratios (e.g. Fo).
+
+    Args:
+        ratios: Dictionary of ratios to get the standard deviation of.
+
+    Returns:
+        ratios: amended dictionary
+    """
+    keys = [key for key in ratios.keys()]
+    for key in keys:
+        ratios[f'2SD_{key}'] = np.std(ratios[key]) * 2
+        ratios[f'delta_{key}'] = np.max(ratios[key]) - np.min(ratios[key])
+    return ratios

@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import numpy as np
 
+def plot_vars(var1, var2):
+    pass
+
 def get_rectangle_plot_data(xdata=False, ydata=False, x='Fo', y='Mg#'):
     """
     Obtain a DataFrame containing x and y data that you wish to plot using make_rectangle_plot.

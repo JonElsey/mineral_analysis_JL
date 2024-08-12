@@ -54,10 +54,9 @@ def load_and_filter(input_file, mintype='olivine'):
         sheet_name = 3
     else:
         raise ValueError('Mineral type should be olivine, spinel, orthopyroxene or clinopyroxene.')
-    try:
-        data = pd.read_excel(input_file, sheet_name=sheet_name).dropna()
-    except:
-        raise FileNotFoundError('Please input a valid input Excel spreadsheet.')
+
+    data = pd.read_excel(input_file, sheet_name=sheet_name).dropna()
+
     # Remove commas as these break things later on
     data = data.replace(',', ' ', regex=True)
     print(data)
@@ -67,7 +66,10 @@ def load_and_filter(input_file, mintype='olivine'):
     #     if col not in label_cols:
     #         data[col] = pd.to_numeric(data[col])
     # First off - remove any data with total >101 or <99%
+    len_old = len(data)
     data = data[(data.Total > 99) & (data.Total < 101)]
+    len_new = len(data)
+    print(f'Removed {len_old - len_new} datapoints for failing to meet the quality threshold (total > 99 and < 101)')
     # Then check mineral composition is sensible -
     return data
 
@@ -90,6 +92,10 @@ def group_output_data(oxides, elements, ratios, cat_props, mintype='olivine', sa
 
     oxides.rename(columns={'Na': 'NaO2', 'Mg': 'MgO', 'Al': 'Al2O3', 'Si': 'SiO2', 'Ca': 'CaO',
                            'Ti': 'TiO2', 'Cr': 'Cr2O3', 'Mn': 'MnO', 'Fe': 'FeO', 'Ni': 'NiO'}, inplace=True)
+    oxides.rename(columns={'2SD_Na': '2SD_NaO2', '2SD_Mg': '2SD_MgO', '2SD_Al': '2SD_Al2O3', '2SD_Si': '2SD_SiO2', '2SD_Ca': '2SD_CaO',
+                           '2SD_Ti': '2SD_TiO2', '2SD_Cr': '2SD_Cr2O3', '2SD_Mn': '2SD_MnO', '2SD_Fe': '2SD_FeO', '2SD_Ni': '2SD_NiO'}, inplace=True)
+    oxides.rename(columns={'delta_Na': 'delta_NaO2', 'delta_Mg': 'delta_MgO', 'delta_Al': 'delta_Al2O3', 'delta_Si': 'delta_SiO2', 'delta_Ca': 'delta_CaO',
+                           'delta_Ti': 'delta_TiO2', 'delta_Cr': 'delta_Cr2O3', 'delta_Mn': 'delta_MnO', 'delta_Fe': 'delta_FeO', 'delta_Ni': 'delta_NiO'}, inplace=True)
     oxides = oxides.reset_index()
     ratios = ratios.reset_index(drop=True)
     cat_props = cat_props.reset_index(drop=True)
@@ -135,7 +141,7 @@ def setup_output(data, avg=False):
                              'counts': 'Number of datapoints averaged'}, inplace=True)
     else:
         column_to_move = data.pop("counts")
-        data.insert(len(data.columns), "counts", column_to_move)
+        data.insert(1, "counts", column_to_move)
         data.rename(columns={'Project Path (2)': 'Sample',
                              'counts': 'Number of areas averaged'}, inplace=True)
     return data

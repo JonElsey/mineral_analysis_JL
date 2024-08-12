@@ -5,7 +5,7 @@ import numpy as np
 def average_over_areas(data):
     """
     Average over the samples to obtain a new DataFrame which contains the same data,
-    but as an average for each area.
+    but as an average for each *area* within a given sample.
 
     Args:
         data: input DataFrame that you wish to average over.
@@ -28,7 +28,7 @@ def average_over_areas(data):
     agg_data = data
     return agg_data
 
-def average_over_samples(agg_data):
+def average_over_samples(agg_data, oxides=True):
     """
     Average over the samples to obtain a new DataFrame which contains the same data,
     but as an average for each *sample*.
@@ -39,29 +39,43 @@ def average_over_samples(agg_data):
     Returns:
         data: as input argument data, but now with the samples averaged.
     """
-    names = ['Si', 'Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Ni', 'Fe', 'Ca', 'Na', 'K']
+    if oxides:
+        names = ['Si', 'Ti', 'Al', 'Cr', 'Mn', 'Mg', 'Ni', 'Fe', 'Ca', 'Na', 'K']
     # remove elements that aren't in the dataset else the code will throw an error
-    for name in names:
-        if name not in agg_data.columns:
-            names.remove(name)
-    # calculate 2sd and deltas
+        for name in names:
+            if name not in agg_data.columns:
+                names.remove(name)
+        # calculate 2sd and deltas
+    else:
+        names = [name for name in agg_data.columns]
+        # remove some that we don't want to average
+        names_to_remove = ['counts']
+        for name in names:
+            if name in names_to_remove:
+                names.remove(name)
+
+    # calculate 2 * standard deviation of the data to be averaged, and the max - min
     sd = {}
     delta = {}
     for element in names:
-
         sd[f'2SD_{element}'] = agg_data[element].groupby('Project Path (2)').std() * 2
         delta[f'delta_{element}'] = (agg_data[element].groupby('Project Path (2)').max() -
                                         agg_data[element].groupby('Project Path (2)').min())
 
     # get the number of areas going into each region of each sample
-    counts = agg_data.value_counts(['Project Path (2)']).reset_index()
+    counts = agg_data.value_counts(['Project Path (2)'], sort=False)
     # take the mean of all the regions of all the samples, then add the number of
     # measurements used to get this mean as a new variable
     agg_data = agg_data.groupby(['Project Path (2)'], sort=False)[names].mean()
-    agg_data['counts'] = counts.set_index(agg_data.index)['count']
+    # only need to generate the counts column once so do it when we analyse the oxide data
+
+    if oxides:
+        counts.index = counts.index.get_level_values(0)
+        agg_data['counts'] = counts#.set_index(agg_data.index)['count']
 
     for element in names:
-        agg_data[f'2SD_{element}'] = sd[f'2SD_{element}']
+        # write the standard deviation into the variable by first converting to str
+        agg_data[element] = agg_data[element].round(4).astype(str) + ' ± ' + sd[f'2SD_{element}'].astype(str)
         agg_data[f'delta_{element}'] = delta[f'delta_{element}']
 
     sample_average_data = agg_data
