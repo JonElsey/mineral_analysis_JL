@@ -1,7 +1,7 @@
 Simple script to analyse and plot chemical composition of olivine and pyroxene minerals based on SEM measurements.
 Developed by Jon Elsey for Johan Lissenberg. 
 
-Download the .py files and requirements.txt to a folder.
+Download the .py files and `requirements.txt` to a folder.
 
 Then, install the required modules (Numpy, Pandas and Matplotlib - see `requirements.txt`). I recommend using a new Conda environment if using Anaconda.
 
