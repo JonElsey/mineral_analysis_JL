@@ -28,21 +28,52 @@ def filter_for_scatter(data, mintype_x, mintype_y, mintype_z=False, average=Fals
     Returns:
         data: Amended dataset containing just the elements of the datasets that are present for both mineral types.
     """
+    # error handling - invalid operation if not using sample averages.
+    if not average:
+        raise ValueError('You have specified a plot of x vs y for two different minerals without using sample averages')
 
-    return data
+    # Get matching values in both sample columns - i.e. where we can do our x-y comparison
+    xcols = data[mintype_x]['Sample']
+    ycols = data[mintype_y]['Sample']
+    xycols = pd.Series(np.intersect1d(xcols.values, ycols.values))
+    mintypes = [mintype_x, mintype_y]
+
+    # do so for third axis if specified
+    if mintype_z:
+        zcols = data[mintype_z]['Sample']
+        xycols = pd.Series(np.intersect1d(xycols.values, zcols.values))
+        mintypes.append(mintype_z)
+    newdata = data.copy()
+    # filter based on whether each row is in our list of columns to keep
+    for mintype in mintypes:
+        newdata[mintype] = data[mintype][data[mintype]['Sample'].isin(xycols)]
+
+    return newdata
+
 def scatter_plot(data, mintype_x, mintype_y, mintype_z=False, var1='Si', var2='Ti', var3=False,
                  marker='x', cbar_orientation='vertical', colourmap='plasma', output_path='./plots'):
     """
     x vs y scatter plot of two variables, with an option to have a third variable included as a symbol colour scale.
 
     Args:
-
-
+        data - DataFrame (i.e. read-in Excel data)
+        mintype_x,y - sheet names for the x and y axis data
+        mintype_z - optional, if wanting to plot a third variable with a colour bar, sheet name
+        var1, 2, 3 - column names you want to plot on the x,y,z axes respectively
+        marker - marker type, see Matplotlib documentation for details, e.g. 'x'. 'o', '+'
+        cbar_orientation - optional, 'horizontal' or 'vertical', controls orientation of colour bar
+        colourmap - which colour map you want to use, see Matplotlib colourmaps for details
+        output_path - path relative to the run directory that you want to save figures into
     Returns:
 
     """
+    # check if looking at sample averages - check for consistency later and enable some different
+    # logic if so
     if 'average' in mintype_x or 'average' in mintype_y:
         average = True
+    elif mintype_z:
+        if 'average' in mintype_z:
+            average = True
     else:
         average = False
 
@@ -80,7 +111,9 @@ def scatter_plot(data, mintype_x, mintype_y, mintype_z=False, var1='Si', var2='T
         plt.scatter(x_data, y_data, marker=marker)
 
     elif not var3 and average:
-        plt.errorbar(x_data.to_numpy(dtype=float), y_data.to_numpy(dtype=float),
+        plt.scatter(x_data, y_data, marker=marker)
+
+        plt.errorbar(x_data.to_numpy(dtype=float), y_data.to_numpy(dtype=float), fmt='none',
                      xerr=uncertainty_x.to_numpy(dtype=float), yerr=uncertainty_y.to_numpy(dtype=float))
 
     # If we want to plot 3 variables, things are a bit more complicated. We need to set the symbol colour of each
@@ -107,17 +140,28 @@ def scatter_plot(data, mintype_x, mintype_y, mintype_z=False, var1='Si', var2='T
         sm = plt.cm.ScalarMappable(cmap=colourmap)
         sm.set_clim(vmin=np.min(z_data), vmax=np.max(z_data))
         cbar = plt.colorbar(sm, ax=plt.gca(), orientation=cbar_orientation)
-        zlabel = f'{mintype_z.strip(' ').strip('average').strip('data')} {var3}'
+        zlabel = f'{mintype_z.strip(' ').strip('average').strip('data')}{var3}'
         cbar.set_label(zlabel)
 
     plt.grid()
-    xlabel = f'{mintype_x.strip(' ').strip('average').strip('data')} {var1}'
-    ylabel = f'{mintype_y.strip(' ').strip('average').strip('data')} {var2}'
+    xlabel = f'{mintype_x.strip(' ').strip('average').strip('data')}{var1}'
+    ylabel = f'{mintype_y.strip(' ').strip('average').strip('data')}{var2}'
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.show()
-    output_filename = f'{mintype_x.strip(' ').strip('average').strip('data')}_{var1}_vs_{mintype_y.strip(' ').strip('average').strip('data')}_{var2}_scatter.png'
+    #plt.show()
+    # different filename depending on whether we are plotting 3 variables or not.
+    if not var3:
+        output_filename = (f'{mintype_x.strip(' ').strip('average').strip('data').strip(' ')}_{var1}_vs_'
+                           f'{mintype_y.strip(' ').strip('average').strip('data').strip(' ')}_{var2}_scatter.png')
+    else:      
+        output_filename = (f'{mintype_x.strip(' ').strip('average').strip('data').strip(' ')}_{var1}_vs_'
+                           f'{mintype_y.strip(' ').strip('average').strip('data').strip(' ')}_{var2}_vs'
+                            f'{mintype_z.strip('average').strip('data').strip(' ')}_{var3}_scatter.png')
+
+
     plt.savefig(output_path + '/' + output_filename)
+    
+    
 def plot_hist(data, mintype='Olivine data', key='Si', bins=10, gaussian_fit=False,
               normalise=False, grid=True, output_path='./plots'):
     """
@@ -136,6 +180,7 @@ def plot_hist(data, mintype='Olivine data', key='Si', bins=10, gaussian_fit=Fals
     """
     # If plotting a Gaussian fit over the top, then we need to normalise the data to create a pdf rather than plotting
     # raw counts
+    plt.figure()
     mintype = sanitise_mineral_type(mintype)
     if gaussian_fit:
         normalise = True
@@ -181,7 +226,7 @@ def plot_hist(data, mintype='Olivine data', key='Si', bins=10, gaussian_fit=Fals
         os.makedirs(output_path)
 
     # auto-generate the output filename and then save
-    output_filename = f'{mintype.strip(' ').strip('average').strip('data')}_{key}_histogram.png'
+    output_filename = f'{mintype.strip(' ').strip('average').strip('data').strip(' ')}_{key}_histogram.png'
     plt.savefig(output_path + '/' + output_filename)
 
 
@@ -313,15 +358,15 @@ def make_rectangle_plot(grouped_data, fname, scatter=False, fill=False,
     plt.xlim(grouped_min[f'{x}_min'].min() * 0.99, grouped_max[f'{x}_max'].max() * 1.01)
     plt.ylim(grouped_min[f'{y}_min'].min() * 0.99, grouped_max[f'{y}_max'].max() * 1.01)
     plt.grid()
-    plt.xlabel(f'{x_mineral} {x}', fontsize=20)
-    plt.ylabel(f'{y_mineral} {y}', fontsize=20)
+    plt.xlabel(f'{x_mineral}{x}', fontsize=20)
+    plt.ylabel(f'{y_mineral}{y}', fontsize=20)
     # markerscale makes the coloured markers bigger on the legend so we can
     # see them better
     plt.legend(markerscale=3, fontsize=15)
     figure = plt.gcf()
     figure.set_size_inches(10, 6)
     plt.savefig(fname, format=figformat, bbox_inches='tight')
-    plt.show()
+    #plt.show()
 
 def load_excel_data_for_plots(path=False):
     fname = get_data_filename(fname=path)
@@ -358,12 +403,16 @@ def sanitise_mineral_type(mintype):
     return mintype
 
 def get_data_and_std(data_to_plot):
+    if data_to_plot.dtype == 'O':  # Pandas string datatype
     # Remove plus minus symbol and split, so we have the data and the uncertainty
-    data = data_to_plot.str.replace('±', '', regex=True).str.split(' ', expand=True)
+        data = data_to_plot.str.replace('±', '', regex=True).str.split(' ', expand=True)
+    else:
+        return (pd.to_numeric(data_to_plot,errors='coerce'),
+                pd.to_numeric(pd.Series(np.zeros(np.shape(data_to_plot))),errors='coerce'))
     if len(data.columns) == 3:
         # 3 columns, data, empty (where we got rid of +-), uncertainty
-        uncertainty = data[2]
-        data = data[0]
+        uncertainty = pd.to_numeric(data[2],errors='coerce')
+        data = pd.to_numeric(data[0],errors='coerce')
     else:
         uncertainty = np.nan
     return data, uncertainty

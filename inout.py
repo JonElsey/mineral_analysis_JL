@@ -103,19 +103,38 @@ def group_output_data(oxides, elements, ratios, cat_props, mintype='olivine', sa
 
     if 'olivine' in mintype:
         ratios_cols = ratios['Fo']
+        if sampleavg:
+            ratios_col2 = ratios['delta_Fo']
+
     elif 'pyroxene' in mintype:
         ratios_cols = ratios['Mg#']
+        if sampleavg:
+            ratios_col2 = ratios['delta_Mg#']
+
     elif 'spinel' in mintype:
         ratios_col1 = ratios['CrN']
         ratios_col2 = ratios['MgN']
+
+        if sampleavg:
+            ratios_col3 = ratios['delta_CrN']
+            ratios_col4 = ratios['delta_MgN']
+
 
     else:
         raise ValueError('Mintype must be "olivine", "spinel" or contain "pyroxene"')
     cations_col = cat_props.rename(columns={'sum': 'Cation sum'})
     if 'spinel' not in mintype:
-        output_data = pd.concat([oxides, elements, ratios_cols, cations_col['Cation sum']], axis=1)
+        if not sampleavg:
+            output_data = pd.concat([oxides, elements, ratios_cols, cations_col['Cation sum']], axis=1)
+        else:
+            output_data = pd.concat([oxides, elements, ratios_cols, ratios_col2, cations_col['Cation sum']], axis=1)
+
     else:
-        output_data = pd.concat([oxides, elements, ratios_col1, ratios_col2, cations_col['Cation sum']], axis=1)
+        if not sampleavg:
+            output_data = pd.concat([oxides, elements, ratios_col1, ratios_col2, cations_col['Cation sum']], axis=1)
+        else:
+            output_data = pd.concat([oxides, elements, ratios_col1, ratios_col2, ratios_col3, ratios_col4,
+                                     cations_col['Cation sum']], axis=1)
 
     return output_data
 

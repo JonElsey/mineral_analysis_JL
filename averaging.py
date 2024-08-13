@@ -75,6 +75,8 @@ def average_over_samples(agg_data, oxides=True):
         agg_data['counts'] = counts#.set_index(agg_data.index)['count']
 
     for element in names:
+        if element in ['Depth']:
+            continue
         # write the standard deviation into the variable by first converting to str
         agg_data[element] = agg_data[element].round(4).astype(str) + ' ± ' + sd[f'2SD_{element}'].round(3).astype(str)
         agg_data[f'delta_{element}'] = delta[f'delta_{element}']
