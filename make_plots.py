@@ -34,6 +34,7 @@ hist_plots = [['Olivine data', 'Fo'],
 for mintype, key in hist_plots:
     # generate them without the Gaussian fit
     pf.plot_hist(data, mintype=mintype, key=key, gaussian_fit=False)
+    plt.close()  # uncomment if you want to see the plots
 
 # Example scatter plots.
 olivine_plots = [['Fo', 'NiO'],
@@ -41,6 +42,7 @@ olivine_plots = [['Fo', 'NiO'],
             ['NiO', 'MnO']]
 for x,y in olivine_plots:
     pf.scatter_plot(data, 'Olivine data', 'Olivine data', var1=x, var2=y)
+    plt.close()  # uncomment if you want to see the plots
 
 opx_plots = [['Mg#', 'CaO'],
              ['Mg#', 'Al2O3'],
@@ -50,6 +52,7 @@ opx_plots = [['Mg#', 'CaO'],
 
 for x, y in opx_plots:
     pf.scatter_plot(data, 'Opx data', 'Opx data', var1=x, var2=y)
+    plt.close()  # uncomment if you want to see the plots
 
 cpx_plots = [['Mg#', 'CaO'],
              ['Mg#', 'Al2O3'],
@@ -58,12 +61,13 @@ cpx_plots = [['Mg#', 'CaO'],
              ['CaO', 'Cr2O3']]
 for x, y in cpx_plots:
     pf.scatter_plot(data, 'Cpx data', 'Cpx data', var1=x, var2=y)
+    plt.close()  # uncomment if you want to see the plots
 
 spinel_plots = [['MgN', 'CrN'],
                 ['TiO2', 'CrN']]
 for x, y in spinel_plots:
     pf.scatter_plot(data, 'Spinel data', 'Spinel data', var1=x, var2=y)
-
+    plt.close()  # uncomment if you want to see the plots
 # Plotting for the averages
 average_combos = [['Olivine average', 'Fo', 'Opx average', 'Mg#'],
                   ['Olivine average', 'Fo', 'Cpx average', 'Mg#'],
@@ -91,6 +95,7 @@ for minx, x, miny, y in average_combos:
     print('Shape x = ', data[minx].shape)
     print('Shape y = ', data[miny].shape)
     pf.scatter_plot(data, minx, miny, var1=x, var2=y)
+    plt.close()  # uncomment if you want to see the plots
 
 # Example of a 3-variable scatterplot. You could do this in a loop like above if
 # you wanted to generate many of these.
